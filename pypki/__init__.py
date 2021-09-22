@@ -12,7 +12,9 @@ __version__ = '1.0'
 
 __all__ = [
     'error',
+    'types',
     'cert',
     'crl',
-    'ocsp'
+    'ocsp',
+    'verify'
 ]
