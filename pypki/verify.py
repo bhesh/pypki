@@ -27,8 +27,16 @@ from datetime import (
 
 from .cert import Certificate
 from .crl import CertificateList
-from .error import InvalidSignature
-from .ocsp import OCSPResponse
+from .error import (
+    NotBeforeError,
+    NotAfterError,
+    ThisUpdateError,
+    NextUpdateError,
+    InvalidSignature,
+    RevokedStatusError,
+    UnknownStatusError
+)
+from .ocsp import OcspResponse
 
 
 def rsa_verify(h, sig, key):
@@ -138,7 +146,7 @@ def _verify_ocsp(ocsp, issuer, filter=None):
 def verify(obj, issuer):
     """
     response
-        accepted objects: Certificate, CertificateList, OCSPResponse
+        accepted objects: Certificate, CertificateList, OcspResponse
     issuer
         Certificate
     :raises:
@@ -149,7 +157,7 @@ def verify(obj, issuer):
         _verify_cert(obj, issuer)
     elif isinstance(obj, CertificateList):
         _verify_crl(obj, issuer)
-    elif isinstance(obj, OCSPResponse):
+    elif isinstance(obj, OcspResponse):
         _verify_ocsp(obj, issuer)
     else:
         assert False, 'invalid object'

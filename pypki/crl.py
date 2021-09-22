@@ -99,13 +99,6 @@ class RevokedCertificate(crl.RevokedCertificate):
     def prettify(self, space=4, file=sys.stdout):
         util.prettify('RevokedCertificate', self, space=space, file=file)
 
-    def printCLI(self, prefix='', space=4, file=sys.stdout):
-        padding = ' '*space
-        print('{}RevokedCertificate'.format(prefix), file=file)
-        print('{}{}Serial:'.format(prefix, padding), '{:X}'.format(self.getSerial()), file=file)
-        print('{}{}Date:'.format(prefix, padding), self.getDate(), file=file)
-        print('{}{}Reason:'.format(prefix, padding), self.getReason(), file=file)
-
 
 class CertificateList(crl.CertificateList):
     "Structure defining an ASN.1 CRL"
@@ -206,52 +199,3 @@ class CertificateList(crl.CertificateList):
 
     def prettify(self, space=4, file=sys.stdout):
         util.prettify('CertificateList', self, space=space, file=file)
-
-#    def printCLI(self, prefix='', space=4, file=sys.stdout):
-#        padding = ' '*space
-#        print('{}CertificateList'.format(prefix), file=file)
-#        print('{}{}SHA-256 Fingerprint:'.format(prefix, padding), SHA256.new(self.dump()).digest().encode('hex'), file=file)
-#        print('{}{}Issuer:'.format(prefix, padding), self.getIssuer(), file=file)
-#        print('{}{}This Update:'.format(prefix, padding), self.getThisUpdate(), file=file)
-#        print('{}{}Next Update:'.format(prefix, padding), self.getNextUpdate(), file=file)
-#        try:
-#            self.isValid()
-#            print('{}{}Valid: True'.format(prefix, padding), file=file)
-#        except error.Error as e:
-#            print('{}{}Valid:'.format(prefix, padding), str(e), file=file)
-#        for rc in self.getRevokedCertificates(): rc.printCLI(prefix=prefix, space=space, file=file)
-#
-#
-#def downloadCRL(url, outFile=None, progressnotifier=None, blocksize=1024, headers={}):
-#    """
-#    :return:
-#        CertificateList ASN.1 object
-#    """
-#
-#    # Open HTTP connection
-#    headers['Accept'] = 'application/pkix-crl'
-#    req = URLRequest(url, headers=headers)
-#    res = urlopen(req, timeout=1)
-#
-#    # Download in chunks
-#    totalBytes = int(res.info().getheader('Content-Length').strip())
-#    bytesRead = 0
-#    data = str()
-#    while bytesRead < totalBytes:
-#
-#        # Read chunk
-#        bytesToRead = blocksize
-#        if totalBytes - bytesRead < bytesToRead:
-#            bytesToRead = totalBytes - bytesRead
-#        data += res.read(bytesToRead)
-#        bytesRead = len(data)
-#
-#        # Update progress
-#        if progressnotifier: progressnotifier(bytesRead, totalBytes)
-#
-#    # Write file to disk, if desired
-#    if outFile:
-#        with open(outFile, 'w') as f:
-#            f.write(data)
-#
-#    return CertificateList.from_bytes(data)

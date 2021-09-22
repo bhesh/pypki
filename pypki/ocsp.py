@@ -252,25 +252,6 @@ class SingleResponse(ocsp.SingleResponse):
     def prettify(self, space=4, file=sys.stdout):
         util.prettify('OCSPSingleResponse', self, space=space, file=file)
 
-    def printCLI(self, prefix='', space=4, file=sys.stdout):
-        padding = ' '*space
-        certId = self.getCertId()
-        print('{}{}Issuer Name Hash:'.format(prefix, padding), certId[0].hex(), file=file)
-        print('{}{}Issuer Key Hash:'.format(prefix, padding), certId[1].hex(), file=file)
-        print('{}{}Serial Number: {:X}'.format(prefix, padding, certId[2]), file=file)
-        print('{}{}Cert Status:'.format(prefix, padding), self.getCertStatus(), file=file)
-        revokedInfo = self.getRevokedInfo()
-        if revokedInfo:
-            print('{}{}Revoked Info:'.format(prefix, padding), revokedInfo[0], '-', revokedInfo[1], file=file)
-        print('{}{}This Update:'.format(prefix, padding), self.getThisUpdate(), file=file)
-        print('{}{}Next Update:'.format(prefix, padding), self.getNextUpdate(), file=file)
-        try:
-            self.isValid()
-            print('{}{}Valid: True'.format(prefix, padding), file=file)
-        except error.Error as e:
-            print('{}{}Valid:'.format(prefix, padding), str(e), file=file)
-        print('{}{}--'.format(prefix, padding), file=file)
-
 
 class OcspResponse(ocsp.OCSPResponse):
     "Structure defining an ASN.1 OcspResponse object"
@@ -414,58 +395,6 @@ class OcspResponse(ocsp.OCSPResponse):
 
     def prettify(self, space=4, file=sys.stdout):
         util.prettify('OcspResponse', self, space=space, file=file)
-
-    def printCLI(self, filter=None, prefix='', space=4, file=sys.stdout, issuer=None):
-        """
-        filter
-            list if certIDs: (issuer_name_hash, issuer_key_hash, serial)
-        space
-            indent space size (default: 4)
-        file
-            file to print to (default: stdout)
-        """
-        padding = ' '*space
-        status = self.getStatus()
-        print('{}Response Status:'.format(prefix), status, file=file)
-        if status == 'successful':
-            print('{}Responder ID:'.format(prefix), self.getResponderId(), file=file)
-            print('{}Responses'.format(prefix), file=file)
-            for res in self.getResponses():
-                certId = res.getCertId()
-                if not filter or certId in filter: res.printCLI(prefix=prefix, space=space, file=file)
-            if self.getNonce():
-                print('{}Nonce:'.format(prefix), self.getNonce().hex(), file=file)
-
-            # Signature
-            print('{}Signature Algorithm:'.format(prefix), self.getSignatureAlgorithm(), file=file)
-            try:
-                signer = self.verifySignature()
-                print('{}Signature Verify:'.format(prefix), bool(signer), '-', signer.getSubject(), file=file)
-            except error.InvalidOCSPSignature as e:
-                print('{}Signature Verify:'.format(prefix), str(e), file=file)
-
-            # Signing certificate
-            _certificates = self.getSigningCertificate()
-            if not _certificates:
-                return
-            print('{}OCSP-Signing Certificate Chain'.format(prefix), file=file)
-            for c in _certificates:
-                print('{}{}Issuer:'.format(prefix, padding), c.getIssuer(), file=file)
-                print('{}{}Subject:'.format(prefix, padding), c.getSubject(), file=file)
-                print('{}{}Not Before:'.format(prefix, padding), c.getNotBefore(), file=file)
-                print('{}{}Not After:'.format(prefix, padding), c.getNotAfter(), file=file)
-                try:
-                    c.isValid()
-                    print('{}{}Valid: True'.format(prefix, padding), file=file)
-                except error.Error as e:
-                    print('{}{}Valid:'.format(prefix, padding), str(e), file=file)
-                if issuer:
-                    try:
-                        c.verifySignature(issuer)
-                        print('{}{}Signature Verify: True'.format(prefix, padding), file=file)
-                    except error.InvalidIssuerSignature as e:
-                        print('{}{}Signature Verify: False -'.format(prefix, padding), str(e), file=file)
-                print('{}{}--'.format(prefix, padding), file=file)
 
 
 def post(url, ocspReq, headers={}, timeout=30):
